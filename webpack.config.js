@@ -10,10 +10,11 @@ module.exports = {
     module: {
         loaders: [{
             test: /\.js$/,
-            loader: 'babel-loader',
+            loader: ['babel-loader', 'eslint-loader'],
             exclude: /node_modules/
         }],
     },
+    devtool: 'source-map',
     watch: true,
 
     watchOptions: {

@@ -1,16 +1,17 @@
 import React from 'react';
 import moment from 'moment';
+
+import { constants } from './constants';
 import { PopUp } from './Popup';
 
-export default class DaysForMonth extends React.Component {
+export class DaysForMonth extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      data: null, trainers: null, count: 0 };
-
     this.showPopup = this.showPopup.bind(this);
+    this.state = { data: null, trainers: null, count: 0 };
   }
+
   render() {
     let days = [],
       date = this.props.date,
@@ -43,48 +44,57 @@ export default class DaysForMonth extends React.Component {
               <PopUp data={ this.state.data } trainers={ this.state.trainers } count={ this.state.count}/>
           </div>);
   }
+
   renderEvents(day) {
     const events = this.getEventsByDay(day);
-    const length = events.length;
+    //const length = events.length;
     const eventElements = [];
 
-    for (let i = 0; i < length; i++) {
-      eventElements.push(<div className={ events[i].type }
-                                          key={ events[i].id }
-                                          data={ events[i].id }
-                                          id="Popover1"
-                                          onClick={ this.showPopup } >
-                          { `${events[i].type}: ` + events[i].title }
+    events.forEach((item) => {
+      eventElements.push(<div className={ item.type }
+                              key={ item.id }
+                              data={ item.id }
+                              id="Popover1"
+                              onClick={ this.showPopup } >
+                          { `${item.type}: ` + item.title }
                         </div>);
-    }
+    });
     return eventElements;
   }
   getEventsByDay(day) {
     const arr = [];
-    day = day.format().slice(0, 10);
+    const starOfDay = day.clone();
+    const endOfDay = starOfDay.clone().add(1, 'd');
     this.props.eventsForWeek.map((item) => {
-      if (day == item.start.slice(0, 10) ||
-          day == moment(item.start).add(+item.duration, 'ms').format().slice(0, 10)) {
+      // Make moment objects from Date
+      let momentStart = moment(item.start);
+      let momentEnd = momentStart.clone().add(+item.duration, 'ms');
+
+      if (momentStart <= starOfDay && momentEnd >= starOfDay ||
+          momentStart <= endOfDay && momentEnd >= endOfDay ||
+          momentStart <= starOfDay && momentEnd >= endOfDay ||
+          momentStart >= starOfDay && momentEnd <= endOfDay) {
         return arr.push(item);
       }
     });
     return arr;
   }
 
+  // Fetch event by id, then fetch for trainers and show popup
   showPopup(event) {
     const id = event.target.getAttribute('data');
-    fetch(`http://128.199.53.150/events/${id}`)
+    fetch(constants.urlForEvents + id)
       .then((response) => response.json())
-      .then ((obj) => {
-        const events = obj;
-        const urls = obj.speakers.map((item) => {
-          return `http://128.199.53.150/trainers/` + item;
+      .then ((event) => {
+        const Events = event;
+        const urls = event.speakers.map((item) => {
+          return constants.urlForTrainers + item;
         });
         Promise.all(urls.map(url =>
           fetch(url).then((response) => response.json())
         )).then((trainers) => {
           this.state.trainers = trainers;
-          this.setState({ data: events, count: this.state.count + 1 });
+          this.setState({ data: Events, count: this.state.count + 1 });
         });
       });
   }

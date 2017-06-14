@@ -1,0 +1,19 @@
+{
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "plugins": [
+    "react"
+  ],
+  "rules": {
+    "comma-dangle": 0,
+    "linebreak-style": 0,
+    "indent": 0
+  },
+  "extends": ["airbnb-base"]
+}

@@ -1,25 +1,27 @@
 import React from 'react';
 
 import { Calendar } from './Calendar';
+import { constants } from './constants';
 
-export default class App extends React.Component {
+export class App extends React.Component {
   constructor(props) {
     super(props);
 
+    // State for waiting first request
     this.state = { data: null };
 
-    fetch(`http://128.199.53.150/events`)
+      // Request for events
+      fetch(constants.urlForEvents)
       .then((response) => {
         return response.json();
       })
-      .then ((obj) => {
-        this.events = obj;
-        /*this.events.sort((a, b) => {
-          if (a.start < b.start) {
-            return -1; }
-          if (a.start > b.start) {
-            return 1; }
-        }); */
+      .then ((events) => {
+        this.events = events;
+
+        // Sort events by start date
+        this.events.sort((a, b) => {
+          return a.start - b.start;
+        });
         this.setState({ data: this.events });
       });
   }

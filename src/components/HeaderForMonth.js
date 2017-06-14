@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default class HeaderForMonth extends React.Component {
+export class HeaderForMonth extends React.Component {
   render() {
     return (
       <div className="row-month-header">

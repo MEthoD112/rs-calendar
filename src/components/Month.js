@@ -1,8 +1,10 @@
 import React from 'react';
-import DaysForMonth from './DaysforMonth';
-import HeaderForMonth from './HeaderForMonth';
+import moment from 'moment';
 
-export default class Month extends React.Component {
+import { DaysForMonth } from './DaysforMonth';
+import { HeaderForMonth } from './HeaderForMonth';
+
+export class Month extends React.Component {
   render() {
     if (this.props.mode === 'Month') {
       return (
@@ -16,6 +18,7 @@ export default class Month extends React.Component {
       return null;
     }
   }
+
   renderWeeks() {
     let weeks = [],
       done = false,
@@ -36,13 +39,19 @@ export default class Month extends React.Component {
     }
     return weeks;
   }
+
   getEventsForWeek(start, end) {
     const arr = [];
-    start = start.format();
-    end = end.format();
 
     this.props.eventsForMonth.map((item) => {
-      if (start <= item.start && end >= item.start) {
+      // Make moment objects from Date
+      let momentStart = moment(item.start);
+      let momentEnd = momentStart.clone().add(+item.duration, 'ms');
+
+      if (momentStart <= start && momentEnd >= start ||
+        momentStart <= end && momentEnd >= end ||
+        momentStart >= start && momentEnd <= end ||
+        momentStart <= start && momentEnd >= end) {
         return arr.push(item);
       }
     });

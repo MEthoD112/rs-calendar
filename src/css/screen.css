@@ -356,7 +356,23 @@ body div .app .week .row-week-header .column-week-header {
     width: 11.2%;
   }
 }
-/* line 219, ../sass/screen.scss */
+/* line 218, ../sass/screen.scss */
+body div .app .week .row-week-header .column-week-header span {
+  font-size: 0.9em;
+}
+@media screen and (max-width: 630px) {
+  /* line 218, ../sass/screen.scss */
+  body div .app .week .row-week-header .column-week-header span {
+    font-size: 0.6rem;
+  }
+}
+@media screen and (max-width: 460px) {
+  /* line 218, ../sass/screen.scss */
+  body div .app .week .row-week-header .column-week-header span {
+    font-size: 0.4rem;
+  }
+}
+/* line 228, ../sass/screen.scss */
 body div .app .week .row-week-header .column-week-scroll {
   display: inline-block;
   width: 18px;
@@ -367,12 +383,12 @@ body div .app .week .row-week-header .column-week-scroll {
   font-size: 90%;
   height: 20px;
 }
-/* line 230, ../sass/screen.scss */
+/* line 239, ../sass/screen.scss */
 body div .app .week .week-overflow {
   overflow: scroll;
   height: 28em;
 }
-/* line 234, ../sass/screen.scss */
+/* line 243, ../sass/screen.scss */
 body div .app .week .week-overflow .row-week .column-week {
   display: inline-block;
   overflow: hidden;
@@ -382,43 +398,121 @@ body div .app .week .week-overflow .row-week .column-week {
   vertical-align: middle;
 }
 @media screen and (max-width: 1010px) {
-  /* line 234, ../sass/screen.scss */
+  /* line 243, ../sass/screen.scss */
   body div .app .week .week-overflow .row-week .column-week {
     width: 12.2%;
   }
 }
 @media screen and (max-width: 680px) {
-  /* line 234, ../sass/screen.scss */
+  /* line 243, ../sass/screen.scss */
   body div .app .week .week-overflow .row-week .column-week {
     width: 12.1%;
   }
 }
 @media screen and (max-width: 515px) {
-  /* line 234, ../sass/screen.scss */
+  /* line 243, ../sass/screen.scss */
   body div .app .week .week-overflow .row-week .column-week {
     width: 12%;
   }
 }
 @media screen and (max-width: 415px) {
-  /* line 234, ../sass/screen.scss */
+  /* line 243, ../sass/screen.scss */
   body div .app .week .week-overflow .row-week .column-week {
     width: 11.9%;
   }
 }
-/* line 253, ../sass/screen.scss */
+/* line 262, ../sass/screen.scss */
 body div .app .week .week-overflow .row-week .column-week span {
   color: #99998f;
+  font-size: 1em;
 }
-/* line 257, ../sass/screen.scss */
+@media screen and (max-width: 720px) {
+  /* line 262, ../sass/screen.scss */
+  body div .app .week .week-overflow .row-week .column-week span {
+    font-size: 0.7rem;
+  }
+}
+@media screen and (max-width: 500px) {
+  /* line 262, ../sass/screen.scss */
+  body div .app .week .week-overflow .row-week .column-week span {
+    font-size: 0.5rem;
+  }
+}
+/* line 272, ../sass/screen.scss */
+body div .app .week .week-overflow .row-week .column-week .event, body div .app .week .week-overflow .row-week .column-week .deadline, body div .app .week .week-overflow .row-week .column-week .webinar, body div .app .week .week-overflow .row-week .column-week .lecture, body div .app .week .week-overflow .row-week .column-week .workshop {
+  display: inline-block;
+  width: 45%;
+  height: 100%;
+  margin-left: 0.3rem;
+  font-size: 0.7rem;
+  border-radius: 0.3em;
+  padding-top: 0.3em;
+  text-align: center;
+  cursor: pointer;
+  overflow: hidden;
+}
+@media screen and (max-width: 1060px) {
+  /* line 272, ../sass/screen.scss */
+  body div .app .week .week-overflow .row-week .column-week .event, body div .app .week .week-overflow .row-week .column-week .deadline, body div .app .week .week-overflow .row-week .column-week .webinar, body div .app .week .week-overflow .row-week .column-week .lecture, body div .app .week .week-overflow .row-week .column-week .workshop {
+    font-size: 0.6rem;
+  }
+}
+@media screen and (max-width: 820px) {
+  /* line 272, ../sass/screen.scss */
+  body div .app .week .week-overflow .row-week .column-week .event, body div .app .week .week-overflow .row-week .column-week .deadline, body div .app .week .week-overflow .row-week .column-week .webinar, body div .app .week .week-overflow .row-week .column-week .lecture, body div .app .week .week-overflow .row-week .column-week .workshop {
+    font-size: 0.5rem;
+  }
+}
+@media screen and (max-width: 700px) {
+  /* line 272, ../sass/screen.scss */
+  body div .app .week .week-overflow .row-week .column-week .event, body div .app .week .week-overflow .row-week .column-week .deadline, body div .app .week .week-overflow .row-week .column-week .webinar, body div .app .week .week-overflow .row-week .column-week .lecture, body div .app .week .week-overflow .row-week .column-week .workshop {
+    font-size: 0.4rem;
+  }
+}
+@media screen and (max-width: 540px) {
+  /* line 272, ../sass/screen.scss */
+  body div .app .week .week-overflow .row-week .column-week .event, body div .app .week .week-overflow .row-week .column-week .deadline, body div .app .week .week-overflow .row-week .column-week .webinar, body div .app .week .week-overflow .row-week .column-week .lecture, body div .app .week .week-overflow .row-week .column-week .workshop {
+    font-size: 0.3rem;
+  }
+}
+@media screen and (max-width: 400px) {
+  /* line 272, ../sass/screen.scss */
+  body div .app .week .week-overflow .row-week .column-week .event, body div .app .week .week-overflow .row-week .column-week .deadline, body div .app .week .week-overflow .row-week .column-week .webinar, body div .app .week .week-overflow .row-week .column-week .lecture, body div .app .week .week-overflow .row-week .column-week .workshop {
+    font-size: 0.2rem;
+  }
+}
+/* line 299, ../sass/screen.scss */
+body div .app .week .week-overflow .row-week .column-week .event {
+  background: #1ef11e;
+}
+/* line 302, ../sass/screen.scss */
+body div .app .week .week-overflow .row-week .column-week .deadline {
+  background: #5454e2;
+  color: #ffffff;
+}
+/* line 306, ../sass/screen.scss */
+body div .app .week .week-overflow .row-week .column-week .webinar {
+  background: #e8e849;
+}
+/* line 309, ../sass/screen.scss */
+body div .app .week .week-overflow .row-week .column-week .lecture {
+  background: rgba(36, 222, 222, 0.65);
+}
+/* line 312, ../sass/screen.scss */
+body div .app .week .week-overflow .row-week .column-week .workshop {
+  background: #e69750;
+  color: #ffffff;
+}
+/* line 317, ../sass/screen.scss */
 body div .app .week .week-overflow .row-week .today {
   background: rgba(248, 232, 232, 0.71);
 }
-/* line 263, ../sass/screen.scss */
+/* line 323, ../sass/screen.scss */
 body div .app .toolbar {
   margin: 2em 0 3em 0;
   font-size: 1em;
 }
-/* line 267, ../sass/screen.scss */
+/* line 327, ../sass/screen.scss */
 body div .app .toolbar div button {
   color: #373a3c;
   display: inline-block;
@@ -433,48 +527,51 @@ body div .app .toolbar div button {
   white-space: nowrap;
   outline: none;
 }
-/* line 282, ../sass/screen.scss */
+/* line 342, ../sass/screen.scss */
 body div .app .toolbar .toolbar-left {
   float: left;
 }
 @media screen and (max-width: 500px) {
-  /* line 282, ../sass/screen.scss */
+  /* line 342, ../sass/screen.scss */
   body div .app .toolbar .toolbar-left {
     float: none;
   }
 }
-/* line 287, ../sass/screen.scss */
+/* line 347, ../sass/screen.scss */
 body div .app .toolbar .toolbar-left button {
   cursor: pointer;
 }
-/* line 291, ../sass/screen.scss */
+/* line 351, ../sass/screen.scss */
 body div .app .toolbar .toolbar-right {
   float: right;
 }
 @media screen and (max-width: 500px) {
-  /* line 291, ../sass/screen.scss */
+  /* line 351, ../sass/screen.scss */
   body div .app .toolbar .toolbar-right {
     float: none;
   }
 }
-/* line 296, ../sass/screen.scss */
+/* line 356, ../sass/screen.scss */
 body div .app .toolbar .toolbar-right button {
   cursor: pointer;
 }
-/* line 300, ../sass/screen.scss */
+/* line 360, ../sass/screen.scss */
 body div .app .toolbar .toolbar-label {
   margin-left: 30%;
   margin-top: 3em;
+  font-size: 1em;
 }
 @media screen and (max-width: 720px) {
-  /* line 300, ../sass/screen.scss */
+  /* line 360, ../sass/screen.scss */
   body div .app .toolbar .toolbar-label {
     margin-left: 10%;
+    font-size: 0.8em;
   }
 }
 @media screen and (max-width: 545px) {
-  /* line 300, ../sass/screen.scss */
+  /* line 360, ../sass/screen.scss */
   body div .app .toolbar .toolbar-label {
     margin-left: 0.1rem;
+    font-size: 0.8em;
   }
 }

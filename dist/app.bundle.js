@@ -25083,6 +25083,7 @@ module.exports = getIteratorFn;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.App = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -25092,6 +25093,8 @@ var _react2 = _interopRequireDefault(_react);
 
 var _Calendar = __webpack_require__(200);
 
+var _constants = __webpack_require__(311);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -25100,26 +25103,27 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var App = function (_React$Component) {
+var App = exports.App = function (_React$Component) {
   _inherits(App, _React$Component);
 
   function App(props) {
     _classCallCheck(this, App);
 
+    // State for waiting first request
     var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
 
     _this.state = { data: null };
 
-    fetch('http://128.199.53.150/events').then(function (response) {
+    // Request for events
+    fetch(_constants.constants.urlForEvents).then(function (response) {
       return response.json();
-    }).then(function (obj) {
-      _this.events = obj;
-      /*this.events.sort((a, b) => {
-        if (a.start < b.start) {
-          return -1; }
-        if (a.start > b.start) {
-          return 1; }
-      }); */
+    }).then(function (events) {
+      _this.events = events;
+
+      // Sort events by start date
+      _this.events.sort(function (a, b) {
+        return a.start - b.start;
+      });
       _this.setState({ data: _this.events });
     });
     return _this;
@@ -25143,8 +25147,6 @@ var App = function (_React$Component) {
   return App;
 }(_react2.default.Component);
 
-exports.default = App;
-
 /***/ }),
 /* 199 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -25160,11 +25162,9 @@ var _reactDom = __webpack_require__(52);
 
 var _App = __webpack_require__(198);
 
-var _App2 = _interopRequireDefault(_App);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-(0, _reactDom.render)(_react2.default.createElement(_App2.default, null), document.querySelector('#root'));
+(0, _reactDom.render)(_react2.default.createElement(_App.App, null), document.querySelector('#root'));
 
 /***/ }),
 /* 200 */
@@ -25190,11 +25190,7 @@ var _moment2 = _interopRequireDefault(_moment);
 
 var _Week = __webpack_require__(207);
 
-var _Week2 = _interopRequireDefault(_Week);
-
 var _Month = __webpack_require__(205);
-
-var _Month2 = _interopRequireDefault(_Month);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -25210,27 +25206,32 @@ var Calendar = exports.Calendar = function (_React$Component) {
   function Calendar(props) {
     _classCallCheck(this, Calendar);
 
+    // Bind all methods
     var _this = _possibleConstructorReturn(this, (Calendar.__proto__ || Object.getPrototypeOf(Calendar)).call(this, props));
 
     _this.handleMode = _this.handleMode.bind(_this);
     _this.previous = _this.previous.bind(_this);
     _this.next = _this.next.bind(_this);
     _this.today = _this.today.bind(_this);
-    _this.renderMonthLabel = _this.renderMonthLabel.bind(_this);
+    _this.renderLabel = _this.renderLabel.bind(_this);
     _this.sortEventsByDate = _this.sortEventsByDate.bind(_this);
 
+    // Get start and end of current month and week
     var startOfMonth = (0, _moment2.default)().startOf('month').day('Sunday');
     var endOfMonth = (0, _moment2.default)().endOf('month').day('Saturday');
+    var startOfWeek = (0, _moment2.default)().startOf('week').day('Sunday');
+    var endOfWeek = (0, _moment2.default)().endOf('week').day('Saturday');
 
     _this.state = {
-      mode: 'Week',
+      mode: 'Month',
       month: (0, _moment2.default)(),
       week: (0, _moment2.default)(),
       data: _this.props.data,
-      eventsForMonth: null
+      eventsForMonth: null,
+      eventsForWeek: null
     };
-    var eventsForMonth = _this.sortEventsByDate(startOfMonth, endOfMonth);
-    _this.state.eventsForMonth = eventsForMonth;
+    _this.state.eventsForMonth = _this.sortEventsByDate(startOfMonth, endOfMonth);
+    _this.state.eventsForWeek = _this.sortEventsByDate(startOfWeek, endOfWeek);
     return _this;
   }
 
@@ -25262,7 +25263,7 @@ var Calendar = exports.Calendar = function (_React$Component) {
               'Next'
             )
           ),
-          this.renderMonthLabel(),
+          this.renderLabel(),
           _react2.default.createElement(
             'div',
             { className: 'toolbar-left' },
@@ -25278,79 +25279,130 @@ var Calendar = exports.Calendar = function (_React$Component) {
             )
           )
         ),
-        _react2.default.createElement(_Week2.default, { mode: this.state.mode, week: this.state.week }),
-        _react2.default.createElement(_Month2.default, { mode: this.state.mode, month: this.state.month, eventsForMonth: this.state.eventsForMonth })
+        _react2.default.createElement(_Week.Week, { mode: this.state.mode, week: this.state.week, eventsForWeek: this.state.eventsForWeek }),
+        _react2.default.createElement(_Month.Month, { mode: this.state.mode, month: this.state.month, eventsForMonth: this.state.eventsForMonth })
       );
     }
+
+    // Handle mode Month or Week
+
   }, {
     key: 'handleMode',
     value: function handleMode(event) {
       if (event.target.innerHTML !== this.state.mode) {
-        this.setState({ mode: event.target.innerHTML });
+        if (this.state.mode === 'Week') {
+          var startOfMonth = this.state.month.clone().startOf('month').day('Sunday');
+          var endOfMonth = this.state.month.clone().endOf('month').day('Saturday');
+          this.setState({
+            eventsForMonth: this.sortEventsByDate(startOfMonth, endOfMonth),
+            month: this.state.month, mode: event.target.innerHTML
+          });
+        } else {
+          var startOfWeek = this.state.week.clone().startOf('week').day('Sunday');
+          var endOfWeek = this.state.week.clone().endOf('week').day('Saturday');
+          this.setState({ eventsForWeek: this.sortEventsByDate(startOfWeek, endOfWeek),
+            week: this.state.week, mode: event.target.innerHTML });
+        }
       }
     }
+
+    // Render previous Month or Week
+
   }, {
     key: 'previous',
     value: function previous() {
       if (this.state.mode === 'Month') {
-        var month = this.state.month.add(-1, 'M');
-        //this.setState({ month: month });
-        //this.setState({ week: month });
+        var previousMonth = this.state.month.add(-1, 'M');
         var startOfMonth = this.state.month.clone().startOf('month').day('Sunday');
         var endOfMonth = this.state.month.clone().endOf('month').day('Saturday');
         this.setState({ eventsForMonth: this.sortEventsByDate(startOfMonth, endOfMonth),
-          month: month });
+          month: previousMonth,
+          week: previousMonth });
       } else {
-        var week = this.state.week.add(-1, 'w');
-        this.setState({ month: week });
-        this.setState({ week: week });
+        var previousWeek = this.state.week.add(-1, 'w');
+        var startOfWeek = this.state.week.clone().startOf('week').day('Sunday');
+        var endOfWeek = this.state.week.clone().endOf('week').day('Saturday');
+        this.setState({ eventsForWeek: this.sortEventsByDate(startOfWeek, endOfWeek),
+          week: previousWeek,
+          month: previousWeek });
       }
     }
+
+    // Render next Month or Week
+
   }, {
     key: 'next',
     value: function next() {
       if (this.state.mode === 'Month') {
-        var month = this.state.month.add(1, 'M');
-        this.setState({ month: month });
-        this.setState({ week: month });
-        var startOfMonth = this.state.month.clone().startOf('month').day('Sunday');
+        var nextMonth = this.state.month.add(1, 'M');
+        var startOfMonth = this.state.week.clone().startOf('month').day('Sunday');
         var endOfMonth = this.state.month.clone().endOf('month').day('Saturday');
-        this.setState({ eventsForMonth: this.sortEventsByDate(startOfMonth, endOfMonth) });
+        this.setState({ eventsForMonth: this.sortEventsByDate(startOfMonth, endOfMonth),
+          month: nextMonth,
+          week: nextMonth });
       } else {
-        var week = this.state.week.add(1, 'w');
-        this.setState({ month: week });
-        this.setState({ week: week });
+        var nextWeek = this.state.week.add(1, 'w');
+        var startOfWeek = this.state.week.clone().startOf('week').day('Sunday');
+        var endOfWeek = this.state.week.clone().endOf('week').day('Saturday');
+        this.setState({ eventsForWeek: this.sortEventsByDate(startOfWeek, endOfWeek),
+          week: nextWeek,
+          month: nextWeek });
       }
     }
+
+    // Render today of Month or Week
+
   }, {
     key: 'today',
     value: function today() {
       if (this.state.month.format('MM Do YY') !== (0, _moment2.default)().format('MM Do YY')) {
-        this.setState({ month: (0, _moment2.default)() });
-        this.setState({ week: (0, _moment2.default)() });
-        var startOfMonth = (0, _moment2.default)().startOf('month').day('Sunday');
-        var endOfMonth = (0, _moment2.default)().endOf('month').day('Saturday');
-        this.setState({ eventsForMonth: this.sortEventsByDate(startOfMonth, endOfMonth) });
+        if (this.state.mode === 'Month') {
+          var startOfMonth = (0, _moment2.default)().startOf('month').day('Sunday');
+          var endOfMonth = (0, _moment2.default)().endOf('month').day('Saturday');
+          this.setState({ eventsForMonth: this.sortEventsByDate(startOfMonth, endOfMonth),
+            month: (0, _moment2.default)(),
+            week: (0, _moment2.default)() });
+        } else {
+          var startOfWeek = (0, _moment2.default)().startOf('week').day('Sunday');
+          var endOfWeek = (0, _moment2.default)().endOf('week').day('Saturday');
+          this.setState({ eventsForWeek: this.sortEventsByDate(startOfWeek, endOfWeek),
+            month: (0, _moment2.default)(),
+            week: (0, _moment2.default)() });
+        }
       }
     }
+
+    // Render label dependes on mode
+
   }, {
-    key: 'renderMonthLabel',
-    value: function renderMonthLabel() {
-      return _react2.default.createElement(
-        'span',
-        { className: 'toolbar-label' },
-        this.state.month.format('MMMM, YYYY')
-      );
+    key: 'renderLabel',
+    value: function renderLabel() {
+      if (this.state.mode === 'Month') {
+        return _react2.default.createElement(
+          'span',
+          { className: 'toolbar-label' },
+          this.state.month.format('MMMM, YYYY')
+        );
+      } else {
+        var startOfWeek = this.state.week.clone().startOf('week').day('Sunday').format('MMMM, Do');
+        var endOfWeek = this.state.week.clone().endOf('week').day('Saturday').format('MMMM, Do');
+        return _react2.default.createElement(
+          'span',
+          { className: 'toolbar-label' },
+          startOfWeek + ' --- ' + endOfWeek
+        );
+      }
     }
   }, {
     key: 'sortEventsByDate',
     value: function sortEventsByDate(start, end) {
       var arr = [];
-      start = start.format();
-      end = end.format();
 
       this.state.data.map(function (item) {
-        if (start <= item.start && end >= item.start) {
+        var momentStart = (0, _moment2.default)(item.start);
+        var momentEnd = momentStart.clone().add(+item.duration, 'ms');
+
+        if (momentStart <= start && momentEnd >= start || momentStart <= end && momentEnd >= end || momentStart >= start && momentEnd <= end || momentStart <= start && momentEnd >= end) {
           return arr.push(item);
         }
       });
@@ -25371,85 +25423,7 @@ var Calendar = exports.Calendar = function (_React$Component) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _react = __webpack_require__(10);
-
-var _react2 = _interopRequireDefault(_react);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var DaysForWeek = function (_React$Component) {
-  _inherits(DaysForWeek, _React$Component);
-
-  function DaysForWeek() {
-    _classCallCheck(this, DaysForWeek);
-
-    return _possibleConstructorReturn(this, (DaysForWeek.__proto__ || Object.getPrototypeOf(DaysForWeek)).apply(this, arguments));
-  }
-
-  _createClass(DaysForWeek, [{
-    key: 'render',
-    value: function render() {
-      var days = [];
-      var date = this.props.date;
-      var week = this.props.week.startOf('week').day('Sunday');
-
-      for (var i = 0; i < 8; i++) {
-        var day = {
-          hours: i === 0 ? date.format('LT') : '',
-          isToday: week.isSame(new Date(), 'day'),
-          date: date
-        };
-
-        days.push(_react2.default.createElement(
-          'div',
-          { className: 'column-week' + (day.isToday ? ' today' : ''),
-            key: day.date.toString() },
-          _react2.default.createElement(
-            'span',
-            { key: day.date.toString(),
-              className: 'time' },
-            day.hours
-          )
-        ));
-
-        date = date.clone();
-        date.add(1, 'h');
-        week = week.clone();
-        week.add(1, 'd');
-      }
-
-      return _react2.default.createElement(
-        'div',
-        { className: 'row-week', key: days[0].toString() },
-        days
-      );
-    }
-  }]);
-
-  return DaysForWeek;
-}(_react2.default.Component);
-
-exports.default = DaysForWeek;
-
-/***/ }),
-/* 202 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
+exports.DaysForWeek = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -25461,6 +25435,8 @@ var _moment = __webpack_require__(0);
 
 var _moment2 = _interopRequireDefault(_moment);
 
+var _constants = __webpack_require__(311);
+
 var _Popup = __webpack_require__(206);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -25471,7 +25447,176 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var DaysForMonth = function (_React$Component) {
+var DaysForWeek = exports.DaysForWeek = function (_React$Component) {
+  _inherits(DaysForWeek, _React$Component);
+
+  function DaysForWeek(props) {
+    _classCallCheck(this, DaysForWeek);
+
+    var _this = _possibleConstructorReturn(this, (DaysForWeek.__proto__ || Object.getPrototypeOf(DaysForWeek)).call(this, props));
+
+    _this.showPopup = _this.showPopup.bind(_this);
+    _this.state = { data: null, trainers: null, count: 0 };
+    return _this;
+  }
+
+  _createClass(DaysForWeek, [{
+    key: 'render',
+    value: function render() {
+      var days = [];
+      var date = this.props.date;
+
+      // Start of current week
+      var startOfWeek = this.props.week.startOf('week').day('Sunday');
+
+      // Difference between current date and the beginng of the week
+      var difference = Math.trunc((date - startOfWeek) / _constants.constants.milisecondsInDay);
+      var Hours = date.clone().subtract(difference, 'days');
+
+      // 8 times for each week column
+      for (var i = 0; i < 8; i++) {
+        var day = {
+          hours: i === 0 ? date.format('LT') : '',
+          isToday: startOfWeek.isSame((0, _moment2.default)().add(1, 'd'), 'day'),
+          date: date,
+          Hours: i === 0 ? null : Hours
+        };
+
+        days.push(_react2.default.createElement(
+          'div',
+          { className: 'column-week' + (day.isToday ? ' today' : ''),
+            key: day.date.toString() },
+          _react2.default.createElement(
+            'span',
+            { className: 'time' },
+            day.hours
+          ),
+          this.renderEvents(day.Hours)
+        ));
+
+        date = date.clone().add(1, 'h');
+        startOfWeek = startOfWeek.clone().add(1, 'd');
+        Hours = i === 0 ? Hours.clone() : Hours.clone().add(1, 'd');
+      }
+      return _react2.default.createElement(
+        'div',
+        { className: 'row-week', key: days[0].toString() },
+        days,
+        _react2.default.createElement(_Popup.PopUp, { data: this.state.data, trainers: this.state.trainers, count: this.state.count })
+      );
+    }
+
+    // Render Events
+
+  }, {
+    key: 'renderEvents',
+    value: function renderEvents(day) {
+      var _this2 = this;
+
+      var events = this.getEventsByDayAndHour(day);
+      if (events) {
+        var arr = [];
+        events.forEach(function (item) {
+          arr.push(_react2.default.createElement(
+            'div',
+            { key: item.id,
+              className: item.type,
+              data: item.id,
+              id: 'Popover1',
+              onClick: _this2.showPopup },
+            item.type + ': ' + item.title
+          ));
+        });
+        return arr;
+      }
+    }
+
+    // Fetch event by id, then fetch for trainers and show popup
+
+  }, {
+    key: 'showPopup',
+    value: function showPopup(event) {
+      var _this3 = this;
+
+      var id = event.target.getAttribute('data');
+      fetch(_constants.constants.urlForEvents + id).then(function (response) {
+        return response.json();
+      }).then(function (events) {
+        var Events = events;
+        var urls = events.speakers.map(function (item) {
+          return _constants.constants.urlForTrainers + item;
+        });
+        Promise.all(urls.map(function (url) {
+          return fetch(url).then(function (response) {
+            return response.json();
+          });
+        })).then(function (trainers) {
+          _this3.state.trainers = trainers;
+          _this3.setState({ data: Events, count: _this3.state.count + 1 });
+        });
+      });
+    }
+
+    // Get events by day and range of hours
+
+  }, {
+    key: 'getEventsByDayAndHour',
+    value: function getEventsByDayAndHour(day) {
+      if (day) {
+        var arr = [];
+        var startOfHour = day.clone();
+        var endOfHour = day.clone().add(1, 'h');
+        this.props.eventsForWeek.map(function (item) {
+          var momentStart = (0, _moment2.default)(item.start);
+          var momentEnd = momentStart.clone().add(+item.duration, 'ms');
+
+          if (momentStart <= startOfHour && momentEnd >= startOfHour || momentStart <= endOfHour && momentEnd >= endOfHour || momentStart >= startOfHour && momentEnd <= endOfHour || momentStart <= startOfHour && momentEnd >= endOfHour) {
+            return arr.push(item);
+          }
+        });
+        return arr;
+      }
+    }
+  }]);
+
+  return DaysForWeek;
+}(_react2.default.Component);
+
+/***/ }),
+/* 202 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DaysForMonth = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(10);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _moment = __webpack_require__(0);
+
+var _moment2 = _interopRequireDefault(_moment);
+
+var _constants = __webpack_require__(311);
+
+var _Popup = __webpack_require__(206);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var DaysForMonth = exports.DaysForMonth = function (_React$Component) {
   _inherits(DaysForMonth, _React$Component);
 
   function DaysForMonth(props) {
@@ -25479,10 +25624,8 @@ var DaysForMonth = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (DaysForMonth.__proto__ || Object.getPrototypeOf(DaysForMonth)).call(this, props));
 
-    _this.state = {
-      data: null, trainers: null, count: 0 };
-
     _this.showPopup = _this.showPopup.bind(_this);
+    _this.state = { data: null, trainers: null, count: 0 };
     return _this;
   }
 
@@ -25531,55 +25674,65 @@ var DaysForMonth = function (_React$Component) {
   }, {
     key: 'renderEvents',
     value: function renderEvents(day) {
+      var _this2 = this;
+
       var events = this.getEventsByDay(day);
-      var length = events.length;
+      //const length = events.length;
       var eventElements = [];
 
-      for (var i = 0; i < length; i++) {
+      events.forEach(function (item) {
         eventElements.push(_react2.default.createElement(
           'div',
-          { className: events[i].type,
-            key: events[i].id,
-            data: events[i].id,
+          { className: item.type,
+            key: item.id,
+            data: item.id,
             id: 'Popover1',
-            onClick: this.showPopup },
-          events[i].type + ': ' + events[i].title
+            onClick: _this2.showPopup },
+          item.type + ': ' + item.title
         ));
-      }
+      });
       return eventElements;
     }
   }, {
     key: 'getEventsByDay',
     value: function getEventsByDay(day) {
       var arr = [];
-      day = day.format().slice(0, 10);
+      var starOfDay = day.clone();
+      var endOfDay = starOfDay.clone().add(1, 'd');
       this.props.eventsForWeek.map(function (item) {
-        if (day == item.start.slice(0, 10) || day == (0, _moment2.default)(item.start).add(+item.duration, 'ms').format().slice(0, 10)) {
+        // Make moment objects from Date
+        var momentStart = (0, _moment2.default)(item.start);
+        var momentEnd = momentStart.clone().add(+item.duration, 'ms');
+
+        if (momentStart <= starOfDay && momentEnd >= starOfDay || momentStart <= endOfDay && momentEnd >= endOfDay || momentStart <= starOfDay && momentEnd >= endOfDay || momentStart >= starOfDay && momentEnd <= endOfDay) {
           return arr.push(item);
         }
       });
       return arr;
     }
+
+    // Fetch event by id, then fetch for trainers and show popup
+
   }, {
     key: 'showPopup',
     value: function showPopup(event) {
-      var _this2 = this;
+      var _this3 = this;
 
       var id = event.target.getAttribute('data');
-      fetch('http://128.199.53.150/events/' + id).then(function (response) {
+      fetch(_constants.constants.urlForEvents + id).then(function (response) {
         return response.json();
-      }).then(function (obj) {
-        var events = obj;
-        var urls = obj.speakers.map(function (item) {
-          return 'http://128.199.53.150/trainers/' + item;
+      }).then(function (event) {
+        var Events = event;
+        var urls = event.speakers.map(function (item) {
+          return _constants.constants.urlForTrainers + item;
         });
         Promise.all(urls.map(function (url) {
           return fetch(url).then(function (response) {
             return response.json();
           });
         })).then(function (trainers) {
-          _this2.state.trainers = trainers;
-          _this2.setState({ data: events, count: _this2.state.count + 1 });
+          _this3.state.trainers = trainers;
+          _this3.setState({ data: Events, count: _this3.state.count + 1 });
         });
       });
     }
@@ -25587,8 +25740,6 @@ var DaysForMonth = function (_React$Component) {
 
   return DaysForMonth;
 }(_react2.default.Component);
-
-exports.default = DaysForMonth;
 
 /***/ }),
 /* 203 */
@@ -25600,6 +25751,7 @@ exports.default = DaysForMonth;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.HeaderForMonth = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -25615,7 +25767,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var HeaderForMonth = function (_React$Component) {
+var HeaderForMonth = exports.HeaderForMonth = function (_React$Component) {
   _inherits(HeaderForMonth, _React$Component);
 
   function HeaderForMonth() {
@@ -25700,8 +25852,6 @@ var HeaderForMonth = function (_React$Component) {
   return HeaderForMonth;
 }(_react2.default.Component);
 
-exports.default = HeaderForMonth;
-
 /***/ }),
 /* 204 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -25712,6 +25862,7 @@ exports.default = HeaderForMonth;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.HeaderForWeek = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -25727,7 +25878,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var HeaderForWeek = function (_React$Component) {
+var HeaderForWeek = exports.HeaderForWeek = function (_React$Component) {
   _inherits(HeaderForWeek, _React$Component);
 
   function HeaderForWeek() {
@@ -25751,7 +25902,7 @@ var HeaderForWeek = function (_React$Component) {
     key: "renderDays",
     value: function renderDays() {
       var days = [];
-      var date = this.props.week.clone().startOf('week').day('Monday');
+      var date = this.props.week.clone().startOf('week').day('Sunday');
 
       for (var i = 0; i < 7; i++) {
         days.push(_react2.default.createElement(
@@ -25760,7 +25911,7 @@ var HeaderForWeek = function (_React$Component) {
           _react2.default.createElement(
             "span",
             { key: date.toString() },
-            date.format('dddd').slice(0, 3) + ' ' + date.format('Do').slice(0, 2) + ' ' + date.format('MMMM').slice(0, 3)
+            date.format('ddd Do')
           )
         ));
         date.add(1, 'd');
@@ -25772,8 +25923,6 @@ var HeaderForWeek = function (_React$Component) {
   return HeaderForWeek;
 }(_react2.default.Component);
 
-exports.default = HeaderForWeek;
-
 /***/ }),
 /* 205 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -25784,6 +25933,7 @@ exports.default = HeaderForWeek;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.Month = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -25791,13 +25941,13 @@ var _react = __webpack_require__(10);
 
 var _react2 = _interopRequireDefault(_react);
 
+var _moment = __webpack_require__(0);
+
+var _moment2 = _interopRequireDefault(_moment);
+
 var _DaysforMonth = __webpack_require__(202);
 
-var _DaysforMonth2 = _interopRequireDefault(_DaysforMonth);
-
 var _HeaderForMonth = __webpack_require__(203);
-
-var _HeaderForMonth2 = _interopRequireDefault(_HeaderForMonth);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -25807,7 +25957,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Month = function (_React$Component) {
+var Month = exports.Month = function (_React$Component) {
   _inherits(Month, _React$Component);
 
   function Month() {
@@ -25823,7 +25973,7 @@ var Month = function (_React$Component) {
         return _react2.default.createElement(
           'div',
           { className: 'month' },
-          _react2.default.createElement(_HeaderForMonth2.default, null),
+          _react2.default.createElement(_HeaderForMonth.HeaderForMonth, null),
           this.renderWeeks()
         );
       } else {
@@ -25842,7 +25992,7 @@ var Month = function (_React$Component) {
       while (!done) {
         var eventsForWeek = this.getEventsForWeek(date.clone(), date.clone().add(1, 'w'));
 
-        weeks.push(_react2.default.createElement(_DaysforMonth2.default, { key: date.toString(),
+        weeks.push(_react2.default.createElement(_DaysforMonth.DaysForMonth, { key: date.toString(),
           date: date.clone(),
           month: this.props.month,
           eventsForWeek: eventsForWeek }));
@@ -25856,11 +26006,13 @@ var Month = function (_React$Component) {
     key: 'getEventsForWeek',
     value: function getEventsForWeek(start, end) {
       var arr = [];
-      start = start.format();
-      end = end.format();
 
       this.props.eventsForMonth.map(function (item) {
-        if (start <= item.start && end >= item.start) {
+        // Make moment objects from Date
+        var momentStart = (0, _moment2.default)(item.start);
+        var momentEnd = momentStart.clone().add(+item.duration, 'ms');
+
+        if (momentStart <= start && momentEnd >= start || momentStart <= end && momentEnd >= end || momentStart >= start && momentEnd <= end || momentStart <= start && momentEnd >= end) {
           return arr.push(item);
         }
       });
@@ -25870,8 +26022,6 @@ var Month = function (_React$Component) {
 
   return Month;
 }(_react2.default.Component);
-
-exports.default = Month;
 
 /***/ }),
 /* 206 */
@@ -25929,6 +26079,7 @@ var PopUp = exports.PopUp = function (_React$Component) {
       } else {
         this.state.data = null;
       }
+
       if (this.state.data) {
         var data = this.state.data;
         this.state.open = true;
@@ -26004,6 +26155,8 @@ var PopUp = exports.PopUp = function (_React$Component) {
         return null;
       }
     }
+    // Toggle popup
+
   }, {
     key: 'toggle',
     value: function toggle() {
@@ -26014,19 +26167,18 @@ var PopUp = exports.PopUp = function (_React$Component) {
     value: function renderTrainers() {
       var trainers = this.props.trainers || [];
       var trainersElements = [];
-      var length = trainers.length;
-      for (var i = 0; i < length; i++) {
+      trainers.forEach(function (item) {
         trainersElements.push(_react2.default.createElement(
           'div',
-          { className: 'trainer', key: trainers[i].id },
-          _react2.default.createElement('img', { src: trainers[i].avatar }),
+          { className: 'trainer', key: item.id },
+          _react2.default.createElement('img', { src: item.avatar }),
           _react2.default.createElement(
             'span',
             null,
-            trainers[i].name
+            item.name
           )
         ));
-      }
+      });
       return trainersElements;
     }
   }, {
@@ -26035,24 +26187,23 @@ var PopUp = exports.PopUp = function (_React$Component) {
       if (this.props.data) {
         var resources = this.props.data.resources || [];
         var resourceElements = [];
-        var length = resources.length;
-        for (var i = 0; i < length; i++) {
+        resources.forEach(function (item, i) {
           resourceElements.push(_react2.default.createElement(
             'li',
             { className: 'resource', key: i },
             _react2.default.createElement(
               'h4',
               null,
-              i + 1 + '.' + resources[i].type
+              i + 1 + '.' + item.type
             ),
             _react2.default.createElement(
               'a',
-              { className: 'link', href: resources[i].resource },
-              resources[i].description
+              { className: 'link', href: item.resource },
+              item.description
             )
           ));
-        }
-        return resourceElements;;
+        });
+        return resourceElements;
       }
     }
   }]);
@@ -26070,6 +26221,7 @@ var PopUp = exports.PopUp = function (_React$Component) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.Week = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -26079,11 +26231,7 @@ var _react2 = _interopRequireDefault(_react);
 
 var _HeaderForWeek = __webpack_require__(204);
 
-var _HeaderForWeek2 = _interopRequireDefault(_HeaderForWeek);
-
 var _DaysForWeek = __webpack_require__(201);
-
-var _DaysForWeek2 = _interopRequireDefault(_DaysForWeek);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -26093,7 +26241,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Week = function (_React$Component) {
+var Week = exports.Week = function (_React$Component) {
   _inherits(Week, _React$Component);
 
   function Week() {
@@ -26109,7 +26257,7 @@ var Week = function (_React$Component) {
         return _react2.default.createElement(
           'div',
           { className: 'week' },
-          _react2.default.createElement(_HeaderForWeek2.default, { week: this.props.week }),
+          _react2.default.createElement(_HeaderForWeek.HeaderForWeek, { week: this.props.week }),
           _react2.default.createElement(
             'div',
             { className: 'week-overflow' },
@@ -26124,10 +26272,16 @@ var Week = function (_React$Component) {
     key: 'renderHours',
     value: function renderHours() {
       var hours = [];
+
+      // Set date hours and minutes to zero for rendering
       var date = this.props.week.clone().hour(0).minutes(0);
 
       for (var i = 0; i < 24; i++) {
-        hours.push(_react2.default.createElement(_DaysForWeek2.default, { key: date.toString(), date: date.clone(), week: this.props.week }));
+        hours.push(_react2.default.createElement(_DaysForWeek.DaysForWeek, { key: date.toString(),
+          date: date.clone(),
+          week: this.props.week,
+          eventsForWeek: this.props.eventsForWeek }));
+        // Add one hour
         date.add(1, 'h');
       }
       return hours;
@@ -26136,8 +26290,6 @@ var Week = function (_React$Component) {
 
   return Week;
 }(_react2.default.Component);
-
-exports.default = Week;
 
 /***/ }),
 /* 208 */
@@ -39020,6 +39172,28 @@ module.exports = function(module) {
 	return module;
 };
 
+
+/***/ }),
+/* 311 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var urlForEvents = "http://128.199.53.150/events/";
+var urlForTrainers = "http://128.199.53.150/trainers/";
+var milisecondsInDay = 86400000;
+
+var constants = {
+  urlForEvents: urlForEvents,
+  urlForTrainers: urlForTrainers,
+  milisecondsInDay: milisecondsInDay
+};
+
+exports.constants = constants;
 
 /***/ })
 /******/ ]);

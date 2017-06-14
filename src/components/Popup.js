@@ -9,7 +9,7 @@ export class PopUp extends React.Component {
     this.toggle = this.toggle.bind(this);
     this.renderTrainers = this.renderTrainers.bind(this);
     this.renderResources = this.renderResources.bind(this);
-    this.state = {count: 0};
+    this.state = { count: 0 };
   }
   render() {
     if (this.state.count !== this.props.count) {
@@ -18,15 +18,16 @@ export class PopUp extends React.Component {
     } else {
       this.state.data = null;
     }
+
     if (this.state.data) {
       const data = this.state.data;
       this.state.open = true;
-      const type = `Type of event: ` + data.type;
-      const title = `Title: ` + data.title;
-      const description = data.description ;
-      const start = `When: ` + moment(data.start).format('dddd, MMMM Do YYYY, h:mm:ss a');
-      const end = ` --- ` + moment(data.start).add(+data.duration, 'ms').format('dddd, MMMM Do YYYY, h:mm:ss a');
-      const location = `Where: ` + data.location;
+      const type = 'Type of event: ' + data.type;
+      const title = 'Title: ' + data.title;
+      const description = data.description;
+      const start = 'When: ' + moment(data.start).format('dddd, MMMM Do YYYY, h:mm:ss a');
+      const end = ' --- ' + moment(data.start).add(+data.duration, 'ms').format('dddd, MMMM Do YYYY, h:mm:ss a');
+      const location = 'Where: ' + data.location;
       return (
         <div>
           <Popover placement="top" isOpen={ this.state.open } target="Popover1" toggle={ this.toggle } >
@@ -49,34 +50,34 @@ export class PopUp extends React.Component {
     }
 
   }
-
+  // Toggle popup
   toggle() {
      this.setState({ count: this.state.count++ });
   }
+
   renderTrainers() {
     const trainers = this.props.trainers || [];
     const trainersElements = [];
-    const length = trainers.length;
-    for (let i = 0; i < length; i++) {
-      trainersElements.push(<div className="trainer" key={ trainers[i].id }>
-                              <img src={ trainers[i].avatar } ></img>
-                              <span>{ trainers[i].name}</span>
+    trainers.forEach((item) => {
+      trainersElements.push(<div className="trainer" key={ item.id }>
+                              <img src={ item.avatar } ></img>
+                              <span>{ item.name}</span>
                             </div>);
-    }
+    });
     return trainersElements;
   }
+
   renderResources() {
     if (this.props.data) {
       const resources = this.props.data.resources || [];
       const resourceElements = [];
-      const length = resources.length;
-      for (let i = 0; i < length; i++) {
+      resources.forEach((item, i) => {
         resourceElements.push(<li className="resource" key={ i }>
-          <h4>{ `${i + 1}.` + resources[i].type }</h4>
-          <a className="link" href={ resources[i].resource } >{ resources[i].description }</a>
+          <h4>{ `${i + 1}.` + item.type }</h4>
+          <a className="link" href={ item.resource } >{ item.description }</a>
         </li>);
-      }
-      return resourceElements;;
+      });
+      return resourceElements;
     }
   }
 }
