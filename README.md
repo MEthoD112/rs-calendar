@@ -1,4 +1,4 @@
 # rs-calendar
 Rs-calendar
 
-https://rawgit.com/MEthoD112/rs-calendar/master/index.html
+http://fitter-badger-60306.bitballoon.com/
